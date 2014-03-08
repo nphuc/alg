@@ -1,9 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+
+typedef long long ll;
 typedef struct item{
   int value;
-  long key;
+  ll key;
   int pos;
 } item;
 
@@ -18,7 +20,7 @@ item* findmin(heap* h){
   return h->h[1];
 }
 
-item* makeitem(long key,int value){
+item* makeitem(ll key,int value){
   item* res=malloc(sizeof(item));
   res->key=key;
   res->value=value;
@@ -40,7 +42,7 @@ void siftup(heap*h,item *i,int x){
   h->h[x]->pos=x;
 }
 
-item* insert(heap* h,long key,int value){
+item* insert(heap* h,ll key,int value){
   ++h->size;
   item *res=makeitem(key,value);
   siftup(h,res,h->size);
@@ -104,8 +106,8 @@ void freeheap(heap*h){
   free(h);
 }
 
-void changekey(heap*h,item*i,long k){
-  long ki=i->key;
+void changekey(heap*h,item*i,ll k){
+  ll ki=i->key;
   i->key=k;
   if(ki!=k){
     if(k<ki) siftup(h,i,i->pos);
@@ -115,7 +117,7 @@ void changekey(heap*h,item*i,long k){
 #include <time.h>
 
 void printitem(item* i){
-  printf("#item: %d %ld \n",i->value,i->key);
+  printf("#item: %d %lld \n",i->value,i->key);
 }
 /*
 int main(){
@@ -148,68 +150,62 @@ typedef struct edge{
 typedef struct graph{
   edge v[MAXS];
 }graph;
-long res[MAXS][MAXS];
 int n,m;
 graph g;
 FILE *fi;
 int a;
 void readgraph(){
   fscanf(fi,"%d%d",&n,&m);
-  int i,u,v,w;
+  int i,u,v;
+  long w;
   for(i=1;i<=n;++i){
     g.v[i].s=0;
   }
   for(i=0;i<m;++i){
-    fscanf(fi,"%d%d%d",&u,&v,&w);
+    fscanf(fi,"%d%d%ld",&u,&v,&w);
     g.v[u].v[g.v[u].s]=w;
     g.v[u].n[g.v[u].s]=v;
     ++g.v[u].s;
   }
-  a=m/n;
-  if(a<4) a=4;
 }
 void dijkstra(int u){
-  long *r=res[u];
+  ll r[n+2];
   int i,j;
   heap *h=makeheap(n,a);
   item* hi[n+2];
-  char ind[n+2];
   for(i=1;i<=n;++i){
     hi[i]=insert(h,MAXC,i);
-    ind[i]=0;
   }
   changekey(h,hi[u],0);
+  int run=0;
   while(h->size>0){
     item *curr=h->h[1];
     r[curr->value]=curr->key;
-    ind[curr->value]=1;
     deletemin(h);
-    //printf("%d %d %ld\n",u,curr->value,curr->key);
+    if(run<2){
+      if(run==1){
+        hi[u]=insert(h,MAXC,u); 
+      }
+      ++run;
+    }
     for(j=0;j<g.v[curr->value].s;++j){
       int visit=g.v[curr->value].n[j];
-      if(ind[visit]) continue;
       item *dest=hi[visit];
-      long pathCost=curr->key+g.v[curr->value].v[j];
+      ll pathCost=curr->key+g.v[curr->value].v[j];
       if(pathCost<dest->key){
         changekey(h,dest,pathCost);
       }
     }
   }
+  printf("%lld\n",r[u]>=MAXC?-1:r[u]);
   freeheap(h);
 }
 void solve(){
   readgraph();
   int i,j;
+  a=m/n;
+  if(a<2) a=2;
   for(i=1;i<=n;++i) dijkstra(i);
-  for(i=1;i<=n;++i){
-    long mx=MAXC;
-    for(j=1;j<=n;++j){
-      if(i!=j && res[i][j]+res[j][i] <mx){
-        mx=res[i][j]+res[j][i];
-      }
-    }
-    printf("%ld\n",mx>=MAXC?-1:mx);
-  }
 }
 int main(){
 #ifdef Test
