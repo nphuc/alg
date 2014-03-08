@@ -188,6 +188,11 @@ void dijkstra(int u){
       }
       ++run;
     }
+    if(run==2 && curr->value==u){
+      printf("%lld\n",r[u]>=MAXC?-1:r[u]);
+      freeheap(h);
+      return;
+    } 
     for(j=0;j<g.v[curr->value].s;++j){
       int visit=g.v[curr->value].n[j];
       item *dest=hi[visit];
@@ -197,14 +202,12 @@ void dijkstra(int u){
       }
     }
   }
-  printf("%lld\n",r[u]>=MAXC?-1:r[u]);
-  freeheap(h);
 }
 void solve(){
   readgraph();
   int i,j;
   a=m/n;
-  if(a<2) a=2;
+  if(a<10) a=10;
   for(i=1;i<=n;++i) dijkstra(i);
 }
 int main(){
