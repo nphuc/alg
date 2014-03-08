@@ -1,0 +1,4 @@
+begin
+writeln(-1mod 3);
+readln;
+end.
