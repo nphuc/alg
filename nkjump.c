@@ -124,28 +124,116 @@ void changekey(heap*h,item*i,long k){
         else siftdown(h,i,i->pos);
     }
 }
-#include <time.h>
 
-void printitem(item* i){
-    printf("#item: %d %ld \n",i->value,i->key);
+#define MAXS 1010
+#define MAXC 99999999
+#define MINC (-1000000)
+typedef struct edge{
+    int v[MAXS];
+    int n[MAXS];
+    int s;
+}edge;
+typedef struct graph{
+    edge v[MAXS];
+}graph;
+long a[MAXS];
+int n,m,ary;
+//graph g;
+int cmp(const void *a,const void *b){
+    return *(long*)a>*(long*)b?1:
+        *(long*)a<*(long*)b?-1:0;
+}
+static inline long getLong(){
+    long res=0;
+    register char c;
+    for(;;){
+        c=getchar_unlocked();
+        if(isdigit(c)) break;
+    }
+    while(isdigit(c)){
+        res=res*10+c-'0';
+        c=getchar_unlocked();
+    }
+    return res;
+}
+static inline int getInt(){
+    int res=0;
+    register char c;
+    for(;;){
+        c=getchar_unlocked();
+        if(isdigit(c)) break;
+    }
+    while(isdigit(c)){
+        res=res*10+c-'0';
+        c=getchar_unlocked();
+    }
+    return res;
+}
+typedef long ll;
+/*static inline long dijkstra(int u){
+  ll r[n+2];
+  register int i,j;
+  heap *h=makeheap(n,ary);
+  item* hi[n+2];
+  for(i=0;i<n;++i){
+  hi[i]=insert(h,MINC,i);
+  }
+  changekey(h,hi[u],0);
+  while(h->size>0){
+  item *curr=h->h[1];
+  r[curr->value]=curr->key;
+  deletemin(h);
+  for(j=0;j<g.v[curr->value].s;++j){
+  int visit=g.v[curr->value].n[j];
+  item *dest=hi[visit];
+  ll pathCost=curr->key+g.v[curr->value].v[j];
+  if(pathCost>dest->key){
+  changekey(h,dest,pathCost);
+  }
+  }
+  }
+  long res=0;
+  for(i=0;i<n;++i){
+//printf("%ld ",r[i]);
+if(r[i]>res) res=r[i];
+}
+//printf("\n");
+return res;
+} */   
+long rs[MAXS];
+#define max2(a,b) ((a)>(b)?(a):(b))
+static inline void read(){
+    n=getInt();
+    long m=1;
+    register int i,j,k;
+    for(i=0;i<n;++i) {
+        a[i]=getLong();
+        rs[i]=1;
+    }
+    qsort(a,n,sizeof(long),cmp);
+    rs[0]=1;rs[1]=1;
+    for(k=2;k<n;++k){
+        i=0;
+        j=k-1;
+        while(i<j){
+            while(i<j &&(a[i]+a[j]!=a[k])){
+                if(a[i]+a[j]>a[k]){
+                    --j;
+                }else{
+                    ++i;
+                }
+            }
+            if(a[i]+a[j]==a[k] &&i!=j){
+                rs[k]=max2(rs[k],max2(rs[i]+1,rs[j]+1));
+                ++i;
+                --j;
+            }
+        }
+        if(rs[k]>m) m=rs[k];
+    }
+    printf("%ld",m);
 }
 int main(){
-    heap *h=makeheap(20,2);
-
-    item *a=insert(h,10,1);
-    item *c=insert(h,2,2);
-    item *d=insert(h,4,3);
-    item *e=insert(h,3,4);
-    item *f=insert(h,1,5);
-    item *g=insert(h,7,6);
-
-    changekey(h,g,3);
-    while(h->size){
-        printitem(h->h[1]);
-        deletemin(h);
-    }
-    freeheap(h);
+    read();
     return 0;
 }
-
-
