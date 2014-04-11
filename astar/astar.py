@@ -3,7 +3,17 @@ import heapq
 s=stdin.readline().split(" ")
 n=int(s[0])
 k=int(s[1])
+"""
+test.inp
+ matrix 6x6 block=10 
+......
+..##.#
+##.#..
+...#..
+.##...
+....#.
 
+"""
 m=[]
 for j in range(n):
     m.append([])
