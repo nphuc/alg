@@ -70,12 +70,6 @@ int cmp(num *a,num *b){
     if(a->sbit*b->sbit<0) return CMP(a->sbit,b->sbit);
     return a->sbit*cmp_(a,b);
 }
-
-void shift_left(num *a,int d){
-    int i;
-    for(i=a->n;i<a->n+d;++i) a->a[i]=0;
-    a->n+=d;
-}
 void shift_right(num *a,int d){
     int i;
     a->n=a->n-d;
@@ -93,6 +87,15 @@ void rm0(num *a){
     while(a->a[0]==0 && c<a->n) ++c;
     shift_right(a,c);
 }
+
+void shift_left(num *a,int d){
+    int i;
+    rm0(a);
+    if(a->a[0]==0) return;
+    for(i=a->n;i<a->n+d;++i) a->a[i]=0;
+    a->n+=d;
+}
+
 #define RM0(hover,k,c) do{\
     int __i;\
     while((k)>1 &&hover[k-1]==0)--(k);\
@@ -256,44 +259,86 @@ static inline  mul(num*a,num *b,num *c){
     c->sbit=a->sbit*b->sbit;
     rm0(c);
 }
-static inline split_at(num *a,int vt,num*l,num *r){
-    int i;
-    for(i=0;i<vt;++i){
-        l->a[i]=a->a[i];
+static inline split_at(num *a,int m2,num*l,num *r){
+    register int i;
+    if(a->n>m2){
+        l->n=a->n-m2;
+        for(i=0;i<l->n;++i){
+            l->a[i]=a->a[i];
+        }
+        r->n=m2;
+        for(;i<a->n;++i){
+            r->a[i-l->n]=a->a[i];
+        }
+    }else{
+        l->n=0;
+        l->a[0]=0;
+        r->n=a->n;
+        for(i=0;i<a->n;++i){
+            r->a[i]=a->a[i];
+        }
     }
-    l->n=vt;
-    l->sbit=a->sbit;
-    for(;i<a->n;++i){
-        r->a[i-vt]=a->a[i];
-    }
-    r->n=a->n-vt;
-    r->sbit=a->sbit;
 }
-
 static inline karatsuba(num *a,num *b,num *c){
-    if(a->n <2 ||b->n<2) {
-        mul(a,b,c);
+    /*
+     *   a=[hi1:lo1]
+     *   b=[h2:lo2]
+     *   a=hi1*B^m2+lo1
+     *   b=hi2*B^m2+lo2
+     *   a*b=(hi1*hi2)B^(2*m2)+ (l1h2+l2h1) B^m2+lo1*lo2
+     */
+    if(a->n<2){
+        mul1_(b,a->a[0],c);
         return;
     }
+    if(b->n<2){
+        mul1_(a,b->a[0],c);
+        return;
+    }
+   /* printf("%d %d\n",a->n,b->n);
+    printNum(a);
+    printNum(b);
+    printf("case #3\n");*/
     int m=max2(a->n,b->n);
     int m2=m/2;
-    num l1,h1,l2,h2;
-    split_at(a,m2,&h1,&l1);
-    split_at(b,m2,&h2,&l2);
-    num z0,z1,z2,lh1,lh2;
-    add(&l1,&h1,&lh1);
-    add(&l2,&h2,&lh2);
-    printNum(&lh1);
-    karatsuba(&l1,&l2,&z0);
+    //printf("m2=%d\n",m2);
+    num hi1,lo1,hi2,lo2,z0,z1,z2,t1,t2,lh1,lh2;
+    split_at(a,m2,&hi1,&lo1);
+    split_at(b,m2,&hi2,&lo2);
+    /*puts("--- hi1 ---");
+    printNum(&hi1);
+    puts("--- lo1 ---");
+    printNum(&lo1);
+    puts("--- hi2 ---");
+    printNum(&hi2);
+    puts("--- lo2 ---");
+    printNum(&lo2);
+    */
+    add_(&lo1,&hi1,&lh1);
+    add_(&lo2,&hi2,&lh2);
+
     karatsuba(&lh1,&lh2,&z1);
-    karatsuba(&h1,&h2,&z2);
-    num t,t2;
-    add(&z0,&z2,&t);
-    sub(&z1,&t,&t2);
-    shift_left(&t2,m2);
-    shift_left(&z2,2*m2);
-    add(&z0,&z2,c);
-    add(c,&t2,c);
+    karatsuba(&lo1,&lo2,&z0);
+    karatsuba(&hi1,&hi2,&z2);
+    /*puts(" z0 z1 z2 ");
+    printNum(&z0);
+    printNum(&z1);
+    printNum(&z2);
+    */
+    add_(&z0,&z2,&t1); //t1=z0+z2
+    sub_(&z1,&t1,&t2);//t2=z1-t1
+    //puts("t2= ");
+    //printNum(&t2);
+    shift_left(&z2,2*m2);//z2*B^2*m2
+    shift_left(&t2,m2); //t2*B^m2
+    //printNum(&z2);
+    //printNum(&t2);
+    //printNum(&z0);
+    add_(&z0,&z2,c);
+    //printNum(c);
+    add_(c,&t2,c);
+    rm0(c);
+    //printNum(c);
 }
 
 
@@ -321,6 +366,7 @@ int main(){
     sub(&a,&b,&sb);
     printNum(&sb);
     karatsuba(&a,&b,&ml);
+    ml.sbit=a.sbit*b.sbit;
     printNum(&ml);
     return 0;
 }
