@@ -13,3 +13,4 @@ alg
     * dijkstra (tours13.c)
     * bignum (bignum.c, karatsuba.c)
     * maxArea history rectangle (hisrect.c)
+    * prime test 'implement Rabin-Miller' (isprime.c)
