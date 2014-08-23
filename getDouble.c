@@ -1,11 +1,12 @@
 inline double getDouble() {
   double res = 0.0;
   char c;
-  while(1) {
-    c = getchar_unlocked();
-    if(c == ' ' || c == '\n') continue;
-    else break;
-  }
+  int flag=1;
+  for(;;){
+        c=getchar_unlocked();
+        if(isdigit(c)) break;
+        else if(c=='-') flag=-1;
+   }
   res = c - '0';
   while(1) {
     c = getchar_unlocked();
@@ -21,5 +22,5 @@ inline double getDouble() {
     }
     res += decimal;
   }
-  return res;
+  return res*flag;
 }
